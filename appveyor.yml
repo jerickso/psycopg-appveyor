@@ -56,9 +56,9 @@ environment:
           # VS 2015
           VS_VER: 14.0
 
-      #Py27 = 9.0  (VS 2008)
-      #Py 3.3,3.4 = 10.0 (VS 2010)
-      #Py 3.5,3.6 = 14.0 (VS 2015)
+        #Py27 = 9.0  (VS 2008)
+        #Py 3.3,3.4 = 10.0 (VS 2010)
+        #Py 3.5,3.6 = 14.0 (VS 2015)
     PSYCOPG2_TESTDB: psycopg2_test
     PSYCOPG2_TESTDB_USER: postgres
     PSYCOPG2_TESTDB_PASSWORD: Password12!
@@ -75,9 +75,6 @@ matrix:
 services:
     - postgresql95
 
-branches:
-    only:
-        - maint_2_6
 cache:
   - C:\Others -> cache.rebuild
 
@@ -120,6 +117,9 @@ init:
     # Setup the compiler based upon version and architecture
     - IF "%PYTHON_ARCH%"=="32" (CALL "C:\\Program Files (x86)\\Microsoft Visual Studio %VS_VER%\\VC\\vcvarsall.bat" x86)
     - IF "%PYTHON_ARCH%"=="64" (CALL "C:\\Program Files (x86)\\Microsoft Visual Studio %VS_VER%\\VC\\vcvarsall.bat" amd64)
+
+    # Change PostgreSQL config file to allow prepared transactions
+    - ECHO max_prepared_transactions = 10 >> "C:\\Program Files\\PostgreSQL\\9.5\\data\\postgresql.conf"
 
 
 # Repository gets cloned, Cache is restored
