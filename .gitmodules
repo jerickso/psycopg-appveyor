@@ -1,0 +1,4 @@
+[submodule "psycopg2"]
+	path = psycopg2
+	url = https://github.com/jerickso/psycopg.git
+	branch = 2_7
