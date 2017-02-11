@@ -101,8 +101,7 @@ init:
 
     # Verify Python version and architecture
     - "%PYTHON%\\python --version"
-    #    - "%PYTHON%\\python -c \"import sys; print sys.maxsize > 2**32\""
-    #    - SET ARCH64 %PYTHON%\\python -c "import sys; print sys.maxsize > 2**32"
+    - "%PYTHON%\\python -c \"import sys; print('64bit: ' + str(sys.maxsize > 2**32))\""
 
     # Get & Install NASM
     #- curl -L -o nasminst.exe http://www.nasm.us/pub/nasm/releasebuilds/2.12.02/win64/nasm-2.12.02-installer-x64.exe && start /wait nasminst.exe /S
@@ -194,7 +193,7 @@ install:
     # Setup build config file (config.pl)
     # Build libpgport first
     # Build libpq
-    # Cannot 'set' variables inside the IF
+    # NOTE: Cannot 'set' and use variables inside the IF
     - SET PGBUILD=%BUILD_DIR%\postgresql-9.6.1
     - IF NOT EXIST %PGTOP%\lib\libpq.lib (
         CD %BUILD_DIR% &&
@@ -219,7 +218,7 @@ install:
       )
 
 
-    # We need wheel installed to build wheels
+    # We need pip current and wheel installed to build wheels
     - "%PYTHON%\\python.exe -m pip install --upgrade pip"
     - "%PYTHON%\\python.exe -m pip install wheel"
 
@@ -227,7 +226,7 @@ install:
 build: off
 
 #before_build:
-build_script:  # Cache is saved before build is finished
+build_script:  # Cache is saved at end of build_script
     # Add PostgreSQL binaries to the path
     - PATH=C:\Program Files\PostgreSQL\9.5\bin\;%PATH%
     - DIR C:\projects\psycopg
@@ -248,7 +247,8 @@ before_test:
 
 test_script:
     - "%PYTHON%/Scripts/pip.exe --version"
-    #  - "build.cmd %PYTHON%\\python.exe setup.py test"
+    # Make sure we are not in a directory where we might import a
+    # different version of psycopg2
     - cd \
     - "%PYTHON%\\python.exe -c \"from psycopg2 import tests; tests.unittest.main(defaultTest='tests.test_suite')\" --verbose"
 
@@ -260,6 +260,10 @@ artifacts:
     # bdist_wheel puts your built wheel in the dist directory
     - path: psycopg2\dist\*.whl
       name: wheel
+    - path: psycopg2\dist\*.egg
+      name: egg
+    - path: psycopg2\dist\*.exe
+      name: exe
 
 deploy: off
 #before_deploy:
