@@ -1,6 +1,6 @@
 version : 2.x.pre.{build}
 
-clone_folder: C:\projects\psycopg
+clone_folder: C:\project
 environment:
     global:
         # MSVC Express 2008's setenv.cmd failes if /E:ON and /V:ON are not
@@ -68,6 +68,13 @@ environment:
     PGUSER: postgres
     PGPASSWORD: Password12!
 
+    TWINEARGS:
+        secure: WQB3vbNI0s6PQtoN5acjkMAsmwWwXh2elyGulK8bkHuExtqYxLx9aYTiNpfeN664okOpaGVWk3rRp6s5YVaEzMFzt09k29cYAv0EgJOkcynZ/ybEvC6U2bGHZlQ7grmFBudcaYdxCETTQtKe08XUcg==
+
+    PYPIUSER:
+        secure: JY2zgPSuASin/LQTsqoPCw==
+    PYPIPWD:
+        secure: PfWW0G002s96B1VHSdWWB6abHejZ4yOOByGngc1OOQ0=
 
 matrix:
     fast_finish: false
@@ -111,6 +118,8 @@ init:
     - COPY "C:\\Program Files (x86)\\Microsoft Visual Studio 9.0\\VC\\bin\\vcvars64.bat" "C:\\Program Files (x86)\\Microsoft Visual Studio 9.0\\VC\\bin\\amd64\\vcvarsamd64.bat"
 
     # Fix problem with VS2010 Express 64bit missing vcvars64.bat
+    # Note: repository not cloned at this point, so need to fetch
+    # file another way
     - curl -fsSL -o "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\VC\\bin\\amd64\\vcvars64.bat" https://raw.githubusercontent.com/jerickso/psycopg-appveyor/master/vcvars64.bat
 
     # Setup the compiler based upon version and architecture
@@ -229,13 +238,13 @@ build: off
 build_script:  # Cache is saved at end of build_script
     # Add PostgreSQL binaries to the path
     - PATH=C:\Program Files\PostgreSQL\9.5\bin\;%PATH%
-    - DIR C:\projects\psycopg
-
-    - CD C:\projects\psycopg\psycopg2
+    - CD C:\project
+    - DIR
 
     # Update the psycopg2 submodule
     - git submodule update --init --recursive
 
+    - CD C:\project\psycopg2
     - "%PYTHON%\\python.exe setup.py build_ext --have-ssl -l libpgcommon -L %OPENSSLTOP%\\lib;%PGTOP%\\lib -I %OPENSSLTOP%\\include;%PGTOP%\\include bdist_wininst bdist_wheel"
     - "%PYTHON%\\python.exe setup.py install"
 
@@ -249,12 +258,14 @@ test_script:
     - "%PYTHON%/Scripts/pip.exe --version"
     # Make sure we are not in a directory where we might import a
     # different version of psycopg2
-    - cd \
+    - CD \
+
+    - "%PYTHON%\\python.exe -c \"import psycopg2; print(psycopg2.__version__)\""
     - "%PYTHON%\\python.exe -c \"from psycopg2 import tests; tests.unittest.main(defaultTest='tests.test_suite')\" --verbose"
 
 after_test:
-    - cd C:\projects\psycopg\psycopg2
-    - dir dist
+    - CD C:\project\psycopg2
+    - DIR dist
 
 artifacts:
     # bdist_wheel puts your built wheel in the dist directory
@@ -271,15 +282,24 @@ deploy: off
 #after_deploy:
 
 #deployment_success: # Webhooks
-#on_success: # Scripts
+on_success: # Scripts
 #  You can use this step to upload your artifacts to a public website.
 #  See Appveyor's documentation for more details. Or you can simply
 #  access your wheels from the Appveyor "artifacts" tab for your build.
-#    - "echo [pypi] > %USERPROFILE%\\.pypirc"
-#    - "echo repository=https://pypi.python.org/pypi >> %USERPROFILE%\\.pypirc"
-#    - "echo username: %PYPIUSER% >> %USERPROFILE%\\.pypirc"
-#    - "echo password: %PYPIPWD% >> %USERPROFILE%\\.pypirc"
-#    - REM python setup.py sdist bdist_wheel upload
+    # Upload to TestPyPi
+    - ECHO "Starting Artifact Deployment"
+    - CD C:\project\psycopg2
+
+    - "%PYTHON%\\python.exe -m pip install twine"
+    - ECHO [distutils]                           > %USERPROFILE%\.pypirc
+    - ECHO index-servers =                       >> %USERPROFILE%\.pypirc
+    - ECHO    testpypi                           >> %USERPROFILE%\.pypirc
+    - ECHO [testpypi]                            >> %USERPROFILE%\\.pypirc
+    - ECHO repository=https://testpypi.python.org/pypi >> %USERPROFILE%\\.pypirc
+    - ECHO username=%PYPIUSER%                   >> %USERPROFILE%\\.pypirc
+    - ECHO password=%PYPIPWD%                    >> %USERPROFILE%\\.pypirc
+    - "%PYTHON%\\python.exe -m twine upload -r testpypi dist\\*.whl"
+    #    - REM python setup.py sdist bdist_wheel upload
 
 #build_failure: # Webhooks
 #deployment_failure: # Webhooks
