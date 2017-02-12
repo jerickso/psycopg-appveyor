@@ -119,7 +119,7 @@ init:
     # Fix problem with VS2010 Express 64bit missing vcvars64.bat
     # Note: repository not cloned at this point, so need to fetch
     # file another way
-    - curl -fsSL -o "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\VC\\bin\\amd64\\vcvars64.bat" https://raw.githubusercontent.com/jerickso/psycopg-appveyor/master/vcvars64.bat
+    - curl -fsSL -o "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\VC\\bin\\amd64\\vcvars64.bat" https://raw.githubusercontent.com/jerickso/psycopg2-appveyor/master/vcvars64-vs2010.bat
 
     # Setup the compiler based upon version and architecture
     - IF "%PYTHON_ARCH%"=="32" (CALL "C:\\Program Files (x86)\\Microsoft Visual Studio %VS_VER%\\VC\\vcvarsall.bat" x86)
