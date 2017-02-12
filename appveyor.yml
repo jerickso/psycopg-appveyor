@@ -68,13 +68,10 @@ environment:
     PGUSER: postgres
     PGPASSWORD: Password12!
 
-    TWINEARGS:
-        secure: WQB3vbNI0s6PQtoN5acjkMAsmwWwXh2elyGulK8bkHuExtqYxLx9aYTiNpfeN664okOpaGVWk3rRp6s5YVaEzMFzt09k29cYAv0EgJOkcynZ/ybEvC6U2bGHZlQ7grmFBudcaYdxCETTQtKe08XUcg==
-
     PYPIUSER:
-        secure: JY2zgPSuASin/LQTsqoPCw==
+        secure: 1mdhD1jH+Y30rZVt22eNug==
     PYPIPWD:
-        secure: PfWW0G002s96B1VHSdWWB6abHejZ4yOOByGngc1OOQ0=
+        secure: 5dY+kUW7jz8NMiTpK4oDq8oRD3dIQRNWQFKpp172+Yw=
 
 matrix:
     fast_finish: false
