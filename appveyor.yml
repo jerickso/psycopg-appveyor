@@ -72,6 +72,8 @@ environment:
         secure: 1mdhD1jH+Y30rZVt22eNug==
     PYPIPWD:
         secure: 5dY+kUW7jz8NMiTpK4oDq8oRD3dIQRNWQFKpp172+Yw=
+    REMOTE_KEY:
+        secure: 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
 
 matrix:
     fast_finish: false
@@ -248,8 +250,9 @@ build_script:  # Cache is saved at end of build_script
 #after_build:
 
 before_test:
-    # PostgreSQL
+    # Create and setup PostgreSQL database for the tests
     - createdb %PSYCOPG2_TESTDB%
+    - psql -d %PSYCOPG2_TESTDB% -c "CREATE EXTENSION HSTORE;"
 
 test_script:
     - "%PYTHON%/Scripts/pip.exe --version"
@@ -295,8 +298,15 @@ on_success: # Scripts
     - ECHO repository=https://testpypi.python.org/pypi >> %USERPROFILE%\\.pypirc
     - ECHO username=%PYPIUSER%                   >> %USERPROFILE%\\.pypirc
     - ECHO password=%PYPIPWD%                    >> %USERPROFILE%\\.pypirc
-    - "%PYTHON%\\python.exe -m twine upload -r testpypi dist\\*.whl"
+    #    - "%PYTHON%\\python.exe -m twine upload -r testpypi dist\\*.whl"
     #    - REM python setup.py sdist bdist_wheel upload
+    - ps: $fileContent = "-----BEGIN RSA PRIVATE KEY-----`n"
+    - ps: $fileContent += $env:REMOTE_KEY.Replace(" ", "`n")
+    - ps: $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
+    - ps: Set-Content $env:USERPROFILE\.ssh\id_rsa $fileContent
+    # Only upload if the computer is 'active'
+    - ps: if (Test-Connection -ComputerName www.stickpeople.com -Count 1 -Quiet) { scp.exe -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dist/*.* psycopg@www.stickpeople.com:files/ }
+
 
 #build_failure: # Webhooks
 #deployment_failure: # Webhooks
