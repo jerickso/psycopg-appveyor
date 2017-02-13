@@ -318,7 +318,7 @@ on_success: # Script
     - ECHO "Starting Artifact Deployment"
     - CD C:\project\psycopg2
 
-    # Upload to TestPyPi
+    # Upload to TestPyPi if the git change is a tag
     - "%PYTHON%\\python.exe -m pip install twine"
     - ECHO [distutils]                           > %USERPROFILE%\.pypirc
     - ECHO index-servers =                       >> %USERPROFILE%\.pypirc
@@ -327,14 +327,15 @@ on_success: # Script
     - ECHO repository=https://testpypi.python.org/pypi >> %USERPROFILE%\\.pypirc
     - ECHO username=%PYPIUSER%                   >> %USERPROFILE%\\.pypirc
     - ECHO password=%PYPIPWD%                    >> %USERPROFILE%\\.pypirc
-    #    - "%PYTHON%\\python.exe -m twine upload -r testpypi dist\\*.whl"
-    #    - REM python setup.py sdist bdist_wheel upload
+    - ps: If ($env:APPVEYOR_REPO_TAG -imatch "true") { "%PYTHON%\\python.exe -m twine upload -r testpypi dist\\*.whl" }
+
+    # Insert SSH Private Key
     - ps: $fileContent = "-----BEGIN RSA PRIVATE KEY-----`n"
     - ps: $fileContent += $env:REMOTE_KEY.Replace(" ", "`n")
     - ps: $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
     - ps: Set-Content $env:USERPROFILE\.ssh\id_rsa $fileContent
     # Only upload if the computer is 'online'
-    - ps: if (Test-Connection -ComputerName www.stickpeople.com -Count 1 -Quiet) { scp.exe -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dist/*.* psycopg@www.stickpeople.com:files/ }
+    - ps: If (Test-Connection -ComputerName www.stickpeople.com -Count 1 -Quiet) { scp.exe -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dist/*.* psycopg@www.stickpeople.com:files/ }
 # Cache is saved after ending of on_success
 
 #build_failure: # Webhooks
