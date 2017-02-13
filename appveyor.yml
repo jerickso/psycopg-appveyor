@@ -222,22 +222,22 @@ install:
     - IF NOT EXIST %PGTOP%\lib MKDIR %PGTOP%\lib
     # Download PostgreSQL source
     - CD C:\Others
-    - IF NOT EXIST postgresql-9.6.1.tar.gz (
-        appveyor DownloadFile https://ftp.postgresql.org/pub/source/v9.6.1/postgresql-9.6.1.tar.gz
+    - IF NOT EXIST postgresql-9.6.2.tar.gz (
+        appveyor DownloadFile https://ftp.postgresql.org/pub/source/v9.6.2/postgresql-9.6.2.tar.gz
       )
 
     # Setup build config file (config.pl)
     # Build libpgport first
     # Build libpq
     # NOTE: Cannot set and use the same variable inside an IF
-    - SET PGBUILD=%BUILD_DIR%\postgresql-9.6.1
+    - SET PGBUILD=%BUILD_DIR%\postgresql-9.6.2
     - IF NOT EXIST %PGTOP%\lib\libpq.lib (
         CD %BUILD_DIR% &&
-        7z x C:\Others\postgresql-9.6.1.tar.gz -so | 7z x -si -ttar > nul &&
+        7z x C:\Others\postgresql-9.6.2.tar.gz -so | 7z x -si -ttar > nul &&
         ECHO Build Directory Contents &&
         ECHO ************************************************************* &&
         DIR &&
-        CD postgresql-9.6.1\src\tools\msvc &&
+        CD postgresql-9.6.2\src\tools\msvc &&
         ECHO $config-^>{ldap} = 0; > config.pl &&
         ECHO $config-^>{openssl} = "%OPENSSLTOP:\=\\%"; >> config.pl &&
         ECHO.>> config.pl &&
