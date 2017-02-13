@@ -84,28 +84,45 @@ services:
 cache:
   - C:\Others -> cache.rebuild
 
-# Scripts called before repo cloning
+# Script called before repo cloning
 init:
     # Uncomment next line to get RDP access during the build.
     #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+    #
+    - ECHO Displaying System Information
+    - ECHO
 
-    - ECHO "Filesystem root:"
+    - ECHO *******************************************************************
+    - ECHO Filesystem root:
+    - ECHO *******************************************************************
     - ps: "ls C:/"
 
-    - ECHO "Installed SDKs:"
+    - ECHO *******************************************************************
+    - ECHO Installed SDKs:
+    - ECHO *******************************************************************
     - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
 
-    - ECHO "Installed Python Versions"
+    - ECHO *******************************************************************
+    - ECHO Installed Python Versions
+    - ECHO *******************************************************************
     - ps: "ls C:/Python*"
 
-    - ECHO "Installed PostgreSQL Versions"
+    - ECHO *******************************************************************
+    - ECHO Installed PostgreSQL Versions
+    - ECHO *******************************************************************
     - ps: "ls \"C:/Program Files/PostgreSQL/*\""
 
     # Set Python to the path
+    - ECHO *******************************************************************
+    - ECHO Environment Variables
+    - ECHO *******************************************************************
     - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
     - "%PYTHON%\\python -c \"import os, pprint;  pprint.pprint(sorted(os.environ.items()))\""
 
     # Verify Python version and architecture
+    - ECHO *******************************************************************
+    - ECHO Python Information
+    - ECHO *******************************************************************
     - "%PYTHON%\\python --version"
     - "%PYTHON%\\python -c \"import sys; print('64bit: ' + str(sys.maxsize > 2**32))\""
 
@@ -114,18 +131,22 @@ init:
     #- SET PATH="C:\Program Files (x86)\nasm;%PATH%"
 
     # Fix problem with VS2008 Express and 64bit builds
+    - ECHO Fixing VS2008 Express and 64bit builds
     - COPY "C:\\Program Files (x86)\\Microsoft Visual Studio 9.0\\VC\\bin\\vcvars64.bat" "C:\\Program Files (x86)\\Microsoft Visual Studio 9.0\\VC\\bin\\amd64\\vcvarsamd64.bat"
 
     # Fix problem with VS2010 Express 64bit missing vcvars64.bat
     # Note: repository not cloned at this point, so need to fetch
     # file another way
+    - ECHO Fixing VS2010 Express and 64bit builds
     - curl -fsSL -o "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\VC\\bin\\amd64\\vcvars64.bat" https://raw.githubusercontent.com/jerickso/psycopg2-appveyor/master/vcvars64-vs2010.bat
 
     # Setup the compiler based upon version and architecture
+    - ECHO Configuring Compiler
     - IF "%PYTHON_ARCH%"=="32" (CALL "C:\\Program Files (x86)\\Microsoft Visual Studio %VS_VER%\\VC\\vcvarsall.bat" x86)
     - IF "%PYTHON_ARCH%"=="64" (CALL "C:\\Program Files (x86)\\Microsoft Visual Studio %VS_VER%\\VC\\vcvarsall.bat" amd64)
 
-    # Change PostgreSQL config file to allow prepared transactions
+    # Change PostgreSQL config file to allow prepared transactions for
+    #   test cases
     - ECHO max_prepared_transactions = 10 >> "C:\\Program Files\\PostgreSQL\\9.5\\data\\postgresql.conf"
 
 
@@ -136,19 +157,22 @@ install:
     - SET BUILD_DIR=%BASE_DIR%\Builds
     - IF NOT EXIST %BUILD_DIR% MKDIR %BUILD_DIR%
 
-    - ECHO Initial Variables
+    - ECHO *******************************************************************
+    - ECHO Initialized variables specific for this build
+    - ECHO *******************************************************************
     - ECHO %BASE_DIR%
     - ECHO %BUILD_DIR%
+    - ECHO *******************************************************************
 
-    #    - If (!(Test-Path -Path "C:\\Others\\%PYTHON_ARCH%\\%VS_VER%" ) {
-    #}
-
-    # Build OpenSSL Libraries
+    # Setup directories for building OpenSSL libraries
+    - ECHO *******************************************************************
+    - ECHO Preparing for building OpenSSL
+    - ECHO *******************************************************************
     - SET OPENSSLTOP=%BASE_DIR%\openssl
     - IF NOT EXIST %OPENSSLTOP%\include\openssl MKDIR %OPENSSLTOP%\include\openssl
     - IF NOT EXIST %OPENSSLTOP%\lib MKDIR %OPENSSLTOP%\lib
 
-    # Setup OpenSSL Environment Variables based on Architecture
+    # Setup OpenSSL Environment Variables based on processor architecture
     - ps: >-
         If ($env:PYTHON_ARCH -Match "32" ) {
             $env:VCVARS_PLATFORM="x86"
@@ -166,8 +190,8 @@ install:
         appveyor DownloadFile https://github.com/openssl/openssl/archive/OpenSSL_1_0_2k.tar.gz
       )
 
-    # To use OpenSSL >= 1.1.0, both libpq and psycopg build environments have to
-    #   support the new library names.  Below are commands to build OpenSSL
+    # To use OpenSSL >= 1.1.0, both libpq and psycopg build environments have
+    #   to support the new library names.  Below are commands to build OpenSSL
     #   1.1.0:
     #    - mkdir _build
     #    - cd _build
@@ -176,7 +200,8 @@ install:
     - IF NOT EXIST %OPENSSLTOP%\lib\ssleay32.lib (
         CD %BUILD_DIR% &&
         7z x C:\Others\OpenSSL_1_0_2k.tar.gz -so | 7z x -si -ttar > nul &&
-        ECHO Build Directory Contents
+        ECHO Build Directory Contents &&
+        ECHO ************************************************************* &&
         DIR &&
         CD openssl-OpenSSL_1_0_2k &&
         perl Configure %TARGET% no-asm no-shared no-zlib --prefix=%OPENSSLTOP% --openssldir=%OPENSSLTOP% &&
@@ -188,7 +213,10 @@ install:
         RMDIR /S /Q %BUILD_DIR%\openssl-OpenSSL_1_0_2k
       )
 
-    # Build PostgreSQL Librarires
+    # Setup directories for building PostgreSQL librarires
+    - ECHO *******************************************************************
+    - ECHO Preparing for building PostgreSQL libraries
+    - ECHO *******************************************************************
     - SET PGTOP=%BASE_DIR%\postgresql
     - IF NOT EXIST %PGTOP%\include MKDIR %PGTOP%\include
     - IF NOT EXIST %PGTOP%\lib MKDIR %PGTOP%\lib
@@ -201,12 +229,13 @@ install:
     # Setup build config file (config.pl)
     # Build libpgport first
     # Build libpq
-    # NOTE: Cannot 'set' and use variables inside the IF
+    # NOTE: Cannot set and use the same variable inside an IF
     - SET PGBUILD=%BUILD_DIR%\postgresql-9.6.1
     - IF NOT EXIST %PGTOP%\lib\libpq.lib (
         CD %BUILD_DIR% &&
         7z x C:\Others\postgresql-9.6.1.tar.gz -so | 7z x -si -ttar > nul &&
-        ECHO Build Directory Contents
+        ECHO Build Directory Contents &&
+        ECHO ************************************************************* &&
         DIR &&
         CD postgresql-9.6.1\src\tools\msvc &&
         ECHO $config-^>{ldap} = 0; > config.pl &&
@@ -234,7 +263,7 @@ install:
 build: off
 
 #before_build:
-build_script:  # Cache is saved at end of build_script
+build_script:
     # Add PostgreSQL binaries to the path
     - PATH=C:\Program Files\PostgreSQL\9.5\bin\;%PATH%
     - CD C:\project
@@ -277,19 +306,19 @@ artifacts:
       name: exe
 
 deploy: off
-#before_deploy:
+#before_deploy: # Script
 #deploy_script:
-#after_deploy:
+#after_deploy: #Script
 
 #deployment_success: # Webhooks
-on_success: # Scripts
+on_success: # Script
 #  You can use this step to upload your artifacts to a public website.
 #  See Appveyor's documentation for more details. Or you can simply
 #  access your wheels from the Appveyor "artifacts" tab for your build.
-    # Upload to TestPyPi
     - ECHO "Starting Artifact Deployment"
     - CD C:\project\psycopg2
 
+    # Upload to TestPyPi
     - "%PYTHON%\\python.exe -m pip install twine"
     - ECHO [distutils]                           > %USERPROFILE%\.pypirc
     - ECHO index-servers =                       >> %USERPROFILE%\.pypirc
@@ -304,23 +333,16 @@ on_success: # Scripts
     - ps: $fileContent += $env:REMOTE_KEY.Replace(" ", "`n")
     - ps: $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
     - ps: Set-Content $env:USERPROFILE\.ssh\id_rsa $fileContent
-    # Only upload if the computer is 'active'
+    # Only upload if the computer is 'online'
     - ps: if (Test-Connection -ComputerName www.stickpeople.com -Count 1 -Quiet) { scp.exe -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dist/*.* psycopg@www.stickpeople.com:files/ }
-
+# Cache is saved after ending of on_success
 
 #build_failure: # Webhooks
 #deployment_failure: # Webhooks
-#on_failure: # Scripts
+#on_failure: # Script
 
 
 # Uncomment to enable RDP on build finish
 on_finish:
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
-#notifications:
-#  - provider: Email
-#  - to:
-#    - jerickso@stickpeople.com
-#    on_build_success: false
-#    on_build_failure: true
-#    on_build_status_changed: true
