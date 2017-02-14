@@ -87,7 +87,7 @@ cache:
 # Script called before repo cloning
 init:
     # Uncomment next line to get RDP access during the build.
-    #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+    - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
     #
     - ECHO Displaying System Information
     - ECHO
@@ -330,12 +330,12 @@ on_success: # Script
     - ps: If ($env:APPVEYOR_REPO_TAG -imatch "true") { "%PYTHON%\\python.exe -m twine upload -r testpypi dist\\*.whl" }
 
     # Insert SSH Private Key
-    - ps: $fileContent = "-----BEGIN RSA PRIVATE KEY-----`n"
-    - ps: $fileContent += $env:REMOTE_KEY.Replace(" ", "`n")
-    - ps: $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
-    - ps: Set-Content $env:USERPROFILE\.ssh\id_rsa $fileContent
+    #- ps: $fileContent = "-----BEGIN RSA PRIVATE KEY-----`n"
+      #- ps: $fileContent += $env:REMOTE_KEY.Replace(" ", "`n")
+      #- ps: $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
+      #- ps: Set-Content $env:USERPROFILE\.ssh\id_rsa $fileContent
     # Only upload if the computer is 'online'
-    - ps: If (Test-Connection -ComputerName www.stickpeople.com -Count 1 -Quiet) { scp.exe -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dist/*.* psycopg@www.stickpeople.com:files/ }
+    #    - ps: If (Test-Connection -ComputerName www.stickpeople.com -Count 1 -Quiet) { scp.exe -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dist/*.* psycopg@www.stickpeople.com:files/ }
 # Cache is saved after ending of on_success
 
 #build_failure: # Webhooks
@@ -345,5 +345,5 @@ on_success: # Script
 
 # Uncomment to enable RDP on build finish
 on_finish:
-  #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
